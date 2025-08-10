@@ -1,49 +1,69 @@
-// src/components/Header/Header.tsx
+// src/components/Header.tsx - Make sure your Header component looks like this
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+} from 'react-native';
 
 interface HeaderProps {
-  onMenuPress?: () => void;
+  onMenuPress: () => void;
+  title?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuPress }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuPress, title = "Zenime" }) => {
   return (
-    <View style={styles.header}>
-      <TouchableOpacity style={styles.menuButton} onPress={onMenuPress}>
-        <View style={styles.menuLine} />
-        <View style={styles.menuLine} />
-        <View style={styles.menuLine} />
-      </TouchableOpacity>
-      <Text style={styles.logo}>Zenime</Text>
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <TouchableOpacity 
+          style={styles.menuButton} 
+          onPress={onMenuPress}
+          activeOpacity={0.7}
+        >
+          {/* Replace this with your menu icon */}
+          <Text style={styles.menuIcon}>☰</Text>
+        </TouchableOpacity>
+        
+        <Text style={styles.title}>{title}</Text>
+        
+        <View style={styles.rightSpace} />
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
+  safeArea: {
+    backgroundColor: '#000000',
+  },
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#000000',
   },
   menuButton: {
-    padding: 5,
+    padding: 8,
+    borderRadius: 4,
   },
-  menuLine: {
-    width: 20,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    marginVertical: 2,
-  },
-  logo: {
-    color: '#FFFFFF',
+  menuIcon: {
     fontSize: 24,
+    color: '#ffffff',
     fontWeight: 'bold',
-    position: 'absolute',
-    left: 0,
-    right: 0,
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    flex: 1,
     textAlign: 'center',
+  },
+  rightSpace: {
+    width: 40, // To balance the left menu button
   },
 });
 

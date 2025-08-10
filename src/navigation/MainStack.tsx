@@ -1,26 +1,16 @@
+// src/navigation/MainStack.tsx
 import React from 'react';
-import {createStackNavigator} from '@react-navigation/stack';
-import { HomeScreen, Splash } from '../screens';
+import { createStackNavigator } from '@react-navigation/stack';
+import DrawerStack from './DrawerStack';  // Import the DrawerStack
+import { Splash } from '../screens';
 
 const Stack = createStackNavigator();
 
-const MainStack = () => {
+export default function MainStack() {
   return (
     <Stack.Navigator initialRouteName="Splash">
-      <Stack.Screen
-        name="Splash"
-        component={Splash}
-        options={{headerShown: false}}
-      />
-         <Stack.Screen
-        name="HomeScreen"
-        component={HomeScreen}
-        options={{headerShown: false}}
-      />
-
-     
+      <Stack.Screen name="Splash" component={Splash} options={{ headerShown: false }} />
+      <Stack.Screen name="DrawerStack" component={DrawerStack} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
-};
-
-export default MainStack;
+}

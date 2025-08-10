@@ -24,15 +24,17 @@ export interface MediaItem {
 }
 
 export interface HomeScreenData {
-  featured: FeaturedContentData[]; // Changed from single object to array
+  featured: FeaturedContentData[];
   continueWatching: ContinueWatchingItem[];
   trending: MediaItem[];
   topSeries: MediaItem[];
   topFilm: MediaItem[];
 }
 
+// Simplified NavigationProps - remove duplicate and conflicting definitions
 export interface NavigationProps {
   navigate: (screen: string, params?: any) => void;
   goBack: () => void;
   replace: (screen: string, params?: any) => void;
+  openDrawer?: () => void;
 }

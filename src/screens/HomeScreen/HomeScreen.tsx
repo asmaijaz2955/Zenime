@@ -16,17 +16,38 @@ import HorizontalList from '../../components/HorizontalList';
 
 // Data and Types
 import { mockData } from '../../data/mockData';
-import { NavigationProps, ContinueWatchingItem, MediaItem } from '../../types';
+import { ContinueWatchingItem, MediaItem } from '../../types';
+import { DrawerActions, useNavigation } from '@react-navigation/native';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
-interface HomeScreenProps {
-  navigation?: NavigationProps;
-}
+// Define the drawer param list
+type DrawerParamList = {
+  HomeScreen: undefined;
+  SellerHub: undefined;
+  MyNetwork: undefined;
+  MyProfile: undefined;
+};
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
-  // Handler functions
+type HomeScreenNavigationProp = DrawerNavigationProp<DrawerParamList, 'HomeScreen'>;
+
+export default function HomeScreen() {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
   const handleMenuPress = () => {
     console.log('Menu pressed');
-    // navigation?.navigate('Menu');
+    try {
+      // Direct method to open drawer
+      navigation.dispatch(DrawerActions.openDrawer());
+    } catch (error) {
+      console.log('Error opening drawer:', error);
+      
+      // Alternative method if the above doesn't work
+      try {
+        navigation.openDrawer();
+      } catch (altError) {
+        console.log('Alternative method also failed:', altError);
+      }
+    }
   };
 
   const handlePlayPress = () => {
@@ -54,39 +75,39 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Header onMenuPress={handleMenuPress} />
-        
-        <FeaturedContent 
+                   
+        <FeaturedContent
           data={mockData.featured}
           onPlayPress={handlePlayPress}
           onMoreInfoPress={handleMoreInfoPress}
         />
-        
-        <ContinueWatching 
+         
+        <ContinueWatching
           data={mockData.continueWatching}
           onItemPress={handleContinueWatchingPress}
         />
-        
-        <HorizontalList 
-          title="Trending Now" 
+         
+        <HorizontalList
+          title="Trending Now"
           data={mockData.trending}
           onItemPress={handleMediaItemPress}
         />
-        
-        <HorizontalList 
-          title="Top Series" 
+         
+        <HorizontalList
+          title="Top Series"
           data={mockData.topSeries}
           onItemPress={handleMediaItemPress}
         />
-        
-        <HorizontalList 
-          title="Top Film" 
+         
+        <HorizontalList
+          title="Top Film"
           data={mockData.topFilm}
           onItemPress={handleMediaItemPress}
         />
       </ScrollView>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -97,5 +118,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
-export default HomeScreen;

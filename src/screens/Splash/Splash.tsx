@@ -25,11 +25,11 @@ type SplashScreenProps = {
 
 const { width, height } = Dimensions.get('window');
 
-const Splash: React.FC<SplashScreenProps> = ({ navigation }) => {
+export default function Splash({navigation}: SplashScreenProps) {
   useEffect(() => {
     // Navigate to main app after 3 seconds
     const timer = setTimeout(() => {
-      navigation.replace('HomeScreen');
+      navigation.replace('DrawerStack'); // Replace with your main app screen
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -109,4 +109,3 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Splash;
