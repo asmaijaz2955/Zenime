@@ -1,10 +1,10 @@
 // src/navigation/DrawerStack.tsx
 import React from 'react';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 
-import { Text, View, StyleSheet } from 'react-native';
-import { AnimeHomeScreen,HomeScreen } from '../screens';
+import {Text, View, StyleSheet} from 'react-native';
+import {ActionScreen, AnimeHomeScreen, GenresScreen, HomeScreen, NotificationScreen, PremiumScreen, PrivacyPolicyScreen, RateUsScreen, SearchScreen, SeriesScreen, SettingsScreen} from '../screens';
 
 const Drawer = createDrawerNavigator();
 
@@ -26,11 +26,11 @@ const ProfileMain = () => (
   </View>
 );
 
-const SearchScreen = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenText}>Search Screen</Text>
-  </View>
-);
+// const SearchScreen = () => (
+//   <View style={styles.screenContainer}>
+//     <Text style={styles.screenText}>Search Screen</Text>
+//   </View>
+// );
 
 const FilmScreen = () => (
   <View style={styles.screenContainer}>
@@ -38,17 +38,17 @@ const FilmScreen = () => (
   </View>
 );
 
-const GenresScreen = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenText}>Genres Screen</Text>
-  </View>
-);
+// const GenresScreen = () => (
+//   <View style={styles.screenContainer}>
+//     <Text style={styles.screenText}>Genres Screen</Text>
+//   </View>
+// );
 
-const SettingsScreen = () => (
-  <View style={styles.screenContainer}>
-    <Text style={styles.screenText}>Settings Screen</Text>
-  </View>
-);
+// const SettingsScreen = () => (
+//   <View style={styles.screenContainer}>
+//     <Text style={styles.screenText}>Settings Screen</Text>
+//   </View>
+// );
 
 export default function DrawerStack() {
   return (
@@ -64,39 +64,64 @@ export default function DrawerStack() {
         },
         overlayColor: 'rgba(0, 0, 0, 0.7)',
         headerShown: false,
-      }}
-    >
-      <Drawer.Screen 
-        name="HomeScreen" 
-        component={HomeScreen} 
-        options={{ headerShown: false }} 
+      }}>
+      <Drawer.Screen
+        name="HomeScreen"
+        component={HomeScreen}
+        options={{headerShown: false}}
       />
-     <Drawer.Screen 
-  name="Search"  // This is the screen name
-  component={AnimeHomeScreen}
+      <Drawer.Screen
+        name="Search" // This is the screen name
+        component={SearchScreen}
+        options={{headerShown: false}}
+      />
+  <Drawer.Screen
+        name="Genres"
+        component={GenresScreen}
+        options={{headerShown: false}}
+      />
+      <Drawer.Screen
+        name="Series"
+        component={SeriesScreen}
+        options={{headerShown: false}}
+      />
+      <Drawer.Screen 
+  name="ActionScreen" 
+  component={ActionScreen} 
   options={{ headerShown: false }}
 />
-     
-      <Drawer.Screen 
-        name="Film" 
-        component={FilmScreen} 
-        options={{ headerShown: false }} 
+      {/* <Drawer.Screen
+        name="Genres"
+        component={GenresScreen}
+        options={{headerShown: false}}
+      /> */}
+
+{/* SeriesScreen */}
+   
+      <Drawer.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{headerShown: false}}
       />
-      <Drawer.Screen 
-        name="Genres" 
-        component={GenresScreen} 
-        options={{ headerShown: false }} 
+        <Drawer.Screen
+        name="PremiumScreen"
+        component={PremiumScreen}
+        options={{headerShown: false}}
       />
-    
-      <Drawer.Screen 
-        name="MyProfile" 
-        component={ProfileMain} 
-        options={{ headerShown: false }} 
+        <Drawer.Screen
+        name="NotificationScreen"
+        component={NotificationScreen}
+        options={{headerShown: false}}
       />
-      <Drawer.Screen 
-        name="Settings" 
-        component={SettingsScreen} 
-        options={{ headerShown: false }} 
+         <Drawer.Screen
+        name="RateUsScreen"
+        component={RateUsScreen}
+        options={{headerShown: false}}
+      />
+          <Drawer.Screen
+        name="PrivacyPolicyScreen"
+        component={PrivacyPolicyScreen}
+        options={{headerShown: false}}
       />
     </Drawer.Navigator>
   );

@@ -10,6 +10,7 @@ import {
   Dimensions,
   ImageBackground,
 } from 'react-native';
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import LinearGradient from 'react-native-linear-gradient';
 
 const { width, height } = Dimensions.get('window');
@@ -165,24 +166,30 @@ export default function AnimeHomeScreen() {
 
         {/* Tab Navigation */}
         <View style={styles.tabNavigation}>
-          {tabs.map((tab, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.tab,
-                activeTab === index && styles.activeTab
-              ]}
-              onPress={() => setActiveTab(index)}
-            >
-              <Text style={[
-                styles.tabText,
-                activeTab === index && styles.activeTabText
-              ]}>
-                {tab}
-              </Text>
-              {activeTab === index && <View style={styles.tabIndicator} />}
-            </TouchableOpacity>
-          ))}
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabScrollContainer}
+          >
+            {tabs.map((tab, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  styles.tab,
+                  activeTab === index && styles.activeTab
+                ]}
+                onPress={() => setActiveTab(index)}
+              >
+                <Text style={[
+                  styles.tabText,
+                  activeTab === index && styles.activeTabText
+                ]}>
+                  {tab}
+                </Text>
+                {activeTab === index && <View style={styles.tabIndicator} />}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Tab Content */}
@@ -201,7 +208,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   heroSection: {
-    height: height * 0.7,
+    height: hp('70%'),
   },
   heroBackground: {
     flex: 1,
@@ -212,82 +219,82 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   heroContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 30,
+    paddingHorizontal: wp('5%'),
+    paddingBottom: hp('4%'),
   },
   mainTitle: {
-    fontSize: 42,
+    fontSize: wp('10%'),
     fontWeight: 'bold',
     color: '#FFFFFF',
-    marginBottom: 15,
+    marginBottom: hp('2%'),
   },
   metadataRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: hp('2.5%'),
     flexWrap: 'wrap',
   },
   matchPercentage: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#10B981',
     fontWeight: '600',
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   year: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#FFFFFF',
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   ratingBadge: {
     backgroundColor: '#374151',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: wp('2%'),
+    paddingVertical: hp('0.3%'),
     borderRadius: 4,
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   ratingText: {
-    fontSize: 12,
+    fontSize: wp('3%'),
     color: '#FFFFFF',
     fontWeight: '500',
   },
   seasons: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#FFFFFF',
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   hdBadge: {
     borderWidth: 1,
     borderColor: '#FFFFFF',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: wp('1.5%'),
+    paddingVertical: hp('0.3%'),
     borderRadius: 2,
   },
   hdText: {
-    fontSize: 10,
+    fontSize: wp('2.5%'),
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
   buttonContainer: {
-    marginBottom: 20,
+    marginBottom: hp('2.5%'),
   },
   playButton: {
     backgroundColor: '#FFFFFF',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: hp('1.5%'),
     borderRadius: 6,
-    marginBottom: 10,
+    marginBottom: hp('1.2%'),
   },
   playIcon: {
-    marginRight: 10,
+    marginRight: wp('2.5%'),
   },
   playIconText: {
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     color: '#000000',
   },
   playButtonText: {
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     fontWeight: '600',
     color: '#000000',
   },
@@ -296,39 +303,40 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: hp('1.5%'),
     borderRadius: 6,
   },
   downloadIcon: {
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     color: '#FFFFFF',
-    marginRight: 10,
+    marginRight: wp('2.5%'),
   },
   downloadButtonText: {
-    fontSize: 18,
+    fontSize: wp('4.5%'),
     fontWeight: '600',
     color: '#FFFFFF',
   },
   description: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#FFFFFF',
-    lineHeight: 20,
+    lineHeight: hp('2.5%'),
   },
   tabNavigation: {
-    flexDirection: 'row',
     backgroundColor: '#000000',
-    paddingHorizontal: 20,
+  },
+  tabScrollContainer: {
+    paddingHorizontal: wp('5%'),
   },
   tab: {
-    marginRight: 30,
-    paddingVertical: 15,
+    marginRight: wp('8%'),
+    paddingVertical: hp('2%'),
     position: 'relative',
   },
   activeTab: {
     // Active tab styles handled by indicator
   },
   tabText: {
-    fontSize: 16,
+    fontSize: wp('4%'),
     color: '#6B7280',
     fontWeight: '500',
   },
@@ -341,83 +349,83 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 3,
+    height: hp('0.4%'),
     backgroundColor: '#DC2626',
   },
   tabContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: wp('5%'),
+    paddingTop: hp('2.5%'),
   },
   seasonSelector: {
-    marginBottom: 20,
+    marginBottom: hp('2.5%'),
   },
   seasonDropdown: {
     backgroundColor: '#374151',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 15,
-    paddingVertical: 12,
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1.5%'),
     borderRadius: 6,
-    maxWidth: 200,
+    maxWidth: wp('50%'),
   },
   seasonText: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#FFFFFF',
     fontWeight: '500',
   },
   dropdownArrow: {
-    fontSize: 16,
+    fontSize: wp('4%'),
     color: '#FFFFFF',
-    marginLeft: 10,
+    marginLeft: wp('2.5%'),
   },
   episodeCard: {
     flexDirection: 'row',
-    marginBottom: 15,
-    paddingBottom: 15,
+    marginBottom: hp('2%'),
+    paddingBottom: hp('2%'),
     borderBottomWidth: 1,
     borderBottomColor: '#374151',
   },
   episodeThumbnail: {
-    width: 120,
-    height: 68,
+    width: wp('30%'),
+    height: hp('8%'),
     backgroundColor: '#D1D5DB',
     borderRadius: 4,
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   episodeInfo: {
     flex: 1,
     justifyContent: 'center',
   },
   episodeTitle: {
-    fontSize: 16,
+    fontSize: wp('4%'),
     color: '#FFFFFF',
     fontWeight: '600',
-    marginBottom: 5,
+    marginBottom: hp('0.6%'),
   },
   episodeMeta: {
     flexDirection: 'row',
   },
   episodeMetaText: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#9CA3AF',
-    marginRight: 15,
+    marginRight: wp('4%'),
   },
   detailsContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: wp('5%'),
+    paddingTop: hp('2.5%'),
   },
   detailRow: {
     flexDirection: 'row',
-    marginBottom: 15,
+    marginBottom: hp('2%'),
   },
   detailLabel: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#9CA3AF',
-    width: 100,
+    width: wp('25%'),
   },
   detailValue: {
-    fontSize: 14,
+    fontSize: wp('3.5%'),
     color: '#FFFFFF',
     flex: 1,
   },
@@ -425,21 +433,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingHorizontal: wp('5%'),
+    paddingTop: hp('2.5%'),
   },
   gridItem: {
-    width: (width - 60) / 3,
-    height: 120,
+    width: wp('28%'),
+    height: hp('15%'),
     borderRadius: 8,
-    marginBottom: 15,
+    marginBottom: hp('2%'),
     justifyContent: 'center',
     alignItems: 'center',
   },
   gridItemContent: {
-    width: 30,
-    height: 30,
+    width: wp('7.5%'),
+    height: wp('7.5%'),
     backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    borderRadius: 15,
+    borderRadius: wp('3.75%'),
   },
 });

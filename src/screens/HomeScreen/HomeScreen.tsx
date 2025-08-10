@@ -7,20 +7,15 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-// Components
 import Header from '../../components/Header';
 import FeaturedContent from '../../components/FeaturedContent';
 import ContinueWatching from '../../components/ContinueWatching';
 import HorizontalList from '../../components/HorizontalList';
-
-// Data and Types
 import { mockData } from '../../data/mockData';
 import { ContinueWatchingItem, MediaItem } from '../../types';
 import { DrawerActions, useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
 
-// Define the drawer param list
 type DrawerParamList = {
   HomeScreen: undefined;
   SellerHub: undefined;

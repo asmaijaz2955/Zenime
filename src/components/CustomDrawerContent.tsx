@@ -40,7 +40,7 @@ const CustomDrawerContent = (props) => {
       title: 'Series',
       iconType: 'Ionicons',
       onPress: () => {
-        // props.navigation.navigate('SellerHub');
+        props.navigation.navigate('Series');
         setActiveIndex(2);
       }
     },
@@ -49,6 +49,8 @@ const CustomDrawerContent = (props) => {
       title: 'Film',
       iconType: 'Ionicons',
       onPress: () => {
+        props.navigation.navigate('Film'); // ✅ Correct - this matches your Drawer.Screen name
+
         console.log('Film pressed');
         setActiveIndex(3);
       }
@@ -58,6 +60,7 @@ const CustomDrawerContent = (props) => {
       title: 'Genres',
       iconType: 'Ionicons',
       onPress: () => {
+        props.navigation.navigate('Genres'); // ✅ Correct - this matches your Drawer.Screen name
         console.log('Genres pressed');
         setActiveIndex(4);
       }
@@ -122,7 +125,7 @@ const CustomDrawerContent = (props) => {
       <View style={styles.bottomSection}>
         <TouchableOpacity
           style={styles.menuItem}
-          onPress={() => console.log('Settings pressed')}
+          onPress={() => props.navigation.navigate('Settings')}
           activeOpacity={0.7}
         >
           <View style={styles.menuItemContent}>
