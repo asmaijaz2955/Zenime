@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -13,37 +13,54 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const CustomDrawerContent = (props) => {
+  const [activeIndex, setActiveIndex] = useState(1); // Home is initially active (index 1)
+
   const menuItems = [
     {
       icon: 'search',
       title: 'Search',
       iconType: 'Ionicons',
-      onPress: () => console.log('Search pressed')
+      onPress: () => {
+        props.navigation.navigate('Search'); // ✅ Correct - this matches your Drawer.Screen name
+        console.log('Search pressed');
+        setActiveIndex(0);
+      }
     },
     {
       icon: 'home',
       title: 'Home',
       iconType: 'Ionicons',
-      isActive: true,
-      onPress: () => props.navigation.navigate('HomeScreen')
+      onPress: () => {
+        props.navigation.navigate('HomeScreen');
+        setActiveIndex(1);
+      }
     },
     {
       icon: 'tv',
       title: 'Series',
       iconType: 'Ionicons',
-      onPress: () => props.navigation.navigate('SellerHub')
+      onPress: () => {
+        // props.navigation.navigate('SellerHub');
+        setActiveIndex(2);
+      }
     },
     {
       icon: 'film',
       title: 'Film',
       iconType: 'Ionicons',
-      onPress: () => console.log('Film pressed')
+      onPress: () => {
+        console.log('Film pressed');
+        setActiveIndex(3);
+      }
     },
     {
       icon: 'apps',
       title: 'Genres',
       iconType: 'Ionicons',
-      onPress: () => console.log('Genres pressed')
+      onPress: () => {
+        console.log('Genres pressed');
+        setActiveIndex(4);
+      }
     }
   ];
 
@@ -74,27 +91,31 @@ const CustomDrawerContent = (props) => {
 
       {/* Menu Items */}
       <View style={styles.menuContainer}>
-        {menuItems.map((item, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[
-              styles.menuItem,
-              item.isActive && styles.activeMenuItem
-            ]}
-            onPress={item.onPress}
-            activeOpacity={0.7}
-          >
-            <View style={styles.menuItemContent}>
-              {renderIcon(item.icon, item.iconType, item.isActive)}
-              <Text style={[
-                styles.menuText,
-                item.isActive && styles.activeMenuText
-              ]}>
-                {item.title}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+        {menuItems.map((item, index) => {
+          const isActive = activeIndex === index;
+          
+          return (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.menuItem,
+                isActive && styles.activeMenuItem
+              ]}
+              onPress={item.onPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.menuItemContent}>
+                {renderIcon(item.icon, item.iconType, isActive)}
+                <Text style={[
+                  styles.menuText,
+                  isActive && styles.activeMenuText
+                ]}>
+                  {item.title}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {/* Settings at Bottom */}
@@ -169,4 +190,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CustomDrawerContent;
+export default CustomDrawerContent; 

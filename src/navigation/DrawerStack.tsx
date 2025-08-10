@@ -2,8 +2,9 @@
 import React from 'react';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import CustomDrawerContent from '../components/CustomDrawerContent';
-import HomeScreen from '../screens/HomeScreen/HomeScreen';
+
 import { Text, View, StyleSheet } from 'react-native';
+import { AnimeHomeScreen,HomeScreen } from '../screens';
 
 const Drawer = createDrawerNavigator();
 
@@ -70,16 +71,12 @@ export default function DrawerStack() {
         component={HomeScreen} 
         options={{ headerShown: false }} 
       />
-      <Drawer.Screen 
-        name="Search" 
-        component={SearchScreen} 
-        options={{ headerShown: false }} 
-      />
-      <Drawer.Screen 
-        name="SellerHub" 
-        component={SellerHubScreen} 
-        options={{ headerShown: false }} 
-      />
+     <Drawer.Screen 
+  name="Search"  // This is the screen name
+  component={AnimeHomeScreen}
+  options={{ headerShown: false }}
+/>
+     
       <Drawer.Screen 
         name="Film" 
         component={FilmScreen} 
@@ -90,11 +87,7 @@ export default function DrawerStack() {
         component={GenresScreen} 
         options={{ headerShown: false }} 
       />
-      <Drawer.Screen 
-        name="MyNetwork" 
-        component={MyNetworkScreen} 
-        options={{ headerShown: false }} 
-      />
+    
       <Drawer.Screen 
         name="MyProfile" 
         component={ProfileMain} 
