@@ -18,16 +18,29 @@ import {
 
 const { width } = Dimensions.get('window');
 
+// Updated interface to match the data structure from HomeScreen
 interface FeaturedContentData {
+  id?: string;
   title: string;
   description: string;
-  characters: string[];
+  image?: string;
+  characters?: string[];
+  subtitle?: string;
+  streamData?: {
+    url: string;
+    type: string;
+    subtitles: any[];
+    intro?: { start: number; end: number };
+    outro?: { start: number; end: number };
+    servers: any[];
+    currentServer: string;
+  };
 }
 
 interface FeaturedContentProps {
   data?: FeaturedContentData[] | FeaturedContentData;
-  onPlayPress?: (index: number) => void;
-  onMoreInfoPress?: (index: number) => void;
+  onPlayPress?: (item: FeaturedContentData, index: number) => void;
+  onMoreInfoPress?: (item: FeaturedContentData, index: number) => void;
 }
 
 const FeaturedContent: React.FC<FeaturedContentProps> = ({ 
@@ -46,7 +59,11 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
 
   // Early return if no data
   if (featuredItems.length === 0) {
-    return null;
+    return (
+      <View style={styles.emptyContainer}>
+        <Text style={styles.emptyText}>No featured content available</Text>
+      </View>
+    );
   }
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -62,42 +79,114 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
     });
   };
 
+  const renderStreamingInfo = (item: FeaturedContentData) => {
+    if (!item.streamData) return null;
+
+    return (
+      <View style={styles.streamingInfo}>
+        <View style={styles.liveIndicator}>
+          <View style={styles.liveDot} />
+          <Text style={styles.liveText}>STREAMING</Text>
+        </View>
+        <Text style={styles.serverInfo}>
+          Server: {item.streamData.currentServer} • {item.streamData.subtitles.length} Subtitles
+        </Text>
+      </View>
+    );
+  };
+
   const renderFeaturedItem = (item: FeaturedContentData, index: number) => (
     <View key={index} style={styles.featuredSlide}>
-      {/* Character Row */}
-      <View style={styles.charactersRow}>
-        {item.characters.map((char, charIndex) => (
-          <Image 
-            key={charIndex} 
-            source={{ uri: char }} 
-            style={styles.characterImage} 
-          />
-        ))} 
-      </View>
+      {/* Background Image (if available) */}
+      {item.image && (
+        <Image 
+          source={{ uri: item.image }} 
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        />
+      )}
       
-      {/* Title and Description */}
-      <Text style={styles.featuredTitle}>{item.title}</Text>
-      <Text style={styles.featuredDescription}>{item.description}</Text>
-      
-      {/* Action Buttons */}
-      <View style={styles.actionButtons}>
-        <TouchableOpacity 
-          style={styles.playButton} 
-          onPress={() => onPlayPress?.(index)}
-        >
-          <View style={styles.playIcon} />
-          <Text style={styles.playButtonText}>Play</Text>
-        </TouchableOpacity>
+      {/* Content Overlay */}
+      <View style={styles.contentOverlay}>
+        {/* Character Row - with fallback if no characters */}
+        <View style={styles.charactersRow}>
+          {item.characters && item.characters.length > 0 ? (
+            item.characters.map((char, charIndex) => (
+              <Image 
+                key={charIndex} 
+                source={{ uri: char }} 
+                style={styles.characterImage} 
+              />
+            ))
+          ) : (
+            // Fallback character placeholders
+            Array.from({ length: 5 }).map((_, charIndex) => (
+              <View 
+                key={charIndex} 
+                style={[
+                  styles.characterImage, 
+                  styles.characterPlaceholder,
+                  { backgroundColor: charIndex % 2 === 0 ? '#393DA0' : '#8B5CF6' }
+                ]} 
+              />
+            ))
+          )}
+        </View>
         
-        <TouchableOpacity 
-          style={styles.infoButton} 
-          onPress={() => onMoreInfoPress?.(index)}
-        >
-          <View style={styles.infoIcon}>
-            <Text style={styles.infoIconText}>i</Text>
+        {/* Streaming Info */}
+        {renderStreamingInfo(item)}
+        
+        {/* Title and Subtitle */}
+        <Text style={styles.featuredTitle}>{item.title}</Text>
+        {item.subtitle && (
+          <Text style={styles.featuredSubtitle}>{item.subtitle}</Text>
+        )}
+        
+        {/* Description */}
+        <Text style={styles.featuredDescription} numberOfLines={3}>
+          {item.description}
+        </Text>
+        
+        {/* Stream Quality and Info */}
+        {item.streamData && (
+          <View style={styles.qualityInfo}>
+            <View style={styles.qualityBadge}>
+              <Text style={styles.qualityText}>HD</Text>
+            </View>
+            <View style={styles.subtitleBadge}>
+              <Text style={styles.subtitleText}>CC</Text>
+            </View>
+            <Text style={styles.streamType}>
+              {item.streamData.type.toUpperCase()}
+            </Text>
           </View>
-          <Text style={styles.infoButtonText}>More Info</Text>
-        </TouchableOpacity>
+        )}
+        
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={[
+              styles.playButton,
+              item.streamData && styles.playButtonLive
+            ]} 
+            onPress={() => onPlayPress?.(item, index)}
+          >
+            <View style={styles.playIcon} />
+            <Text style={styles.playButtonText}>
+              {item.streamData ? 'Watch Now' : 'Play'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.infoButton} 
+            onPress={() => onMoreInfoPress?.(item, index)}
+          >
+            <View style={styles.infoIcon}>
+              <Text style={styles.infoIconText}>i</Text>
+            </View>
+            <Text style={styles.infoButtonText}>More Info</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -119,33 +208,90 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
         {featuredItems.map((item, index) => renderFeaturedItem(item, index))}
       </ScrollView>
       
-      {/* Progress Indicator */}
-      <View style={styles.progressContainer}>
-        {featuredItems.map((_, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => scrollToIndex(index)}
-            style={[
-              styles.progressDot,
-              index === currentIndex && styles.progressDotActive
-            ]}
-          />
-        ))}
-      </View>
+      {/* Progress Indicator - only show if multiple items */}
+      {featuredItems.length > 1 && (
+        <View style={styles.progressContainer}>
+          {featuredItems.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => scrollToIndex(index)}
+              style={[
+                styles.progressDot,
+                index === currentIndex && styles.progressDotActive
+              ]}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 };
-
+export default FeaturedContent;
 const styles = StyleSheet.create({
   featuredContainer: {
     marginBottom: 30,
+    minHeight: hp('45%'),
+  },
+  emptyContainer: {
+    height: hp('30%'),
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    color: '#CCCCCC',
+    fontSize: 16,
+    textAlign: 'center',
   },
   scrollContent: {
     alignItems: 'flex-start',
   },
   featuredSlide: {
     width: width,
+    position: 'relative',
+    minHeight: hp('45%'),
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+  },
+  contentOverlay: {
+    flex: 1,
     paddingHorizontal: 20,
+    paddingTop: 20,
+    justifyContent: 'flex-end',
+    paddingBottom: 40,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+  },
+  streamingInfo: {
+    marginBottom: 15,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
+  liveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FF0000',
+    marginRight: 8,
+  },
+  liveText: {
+    color: '#FF0000',
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
+  serverInfo: {
+    color: '#CCCCCC',
+    fontSize: 12,
+    opacity: 0.8,
   },
   charactersRow: {
     flexDirection: 'row',
@@ -154,21 +300,71 @@ const styles = StyleSheet.create({
   },
   characterImage: {
     width: wp('15%'),
-    height: hp('15%'),
-    resizeMode: 'contain',
+    height: hp('12%'),
+    resizeMode: 'cover',
+    borderRadius: 4,
+  },
+  characterPlaceholder: {
     backgroundColor: '#393DA0',
   },
   featuredTitle: {
     color: '#FFFFFF',
     fontSize: 32,
     fontWeight: 'bold',
+    marginBottom: 5,
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
+  },
+  featuredSubtitle: {
+    color: '#FFD700',
+    fontSize: 14,
+    fontWeight: '600',
     marginBottom: 10,
+    opacity: 0.9,
   },
   featuredDescription: {
     color: '#CCCCCC',
     fontSize: 14,
     lineHeight: 20,
+    marginBottom: 15,
+    textShadowColor: 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
+  qualityInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  qualityBadge: {
+    backgroundColor: '#00C851',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  qualityText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  subtitleBadge: {
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  subtitleText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  streamType: {
+    color: '#FFD700',
+    fontSize: 12,
+    fontWeight: '600',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -182,6 +378,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 6,
     marginRight: 15,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  playButtonLive: {
+    backgroundColor: '#FF0000',
   },
   playIcon: {
     width: 0,
@@ -210,6 +414,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   infoIcon: {
     width: 20,
@@ -236,6 +442,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    marginTop: 10,
   },
   progressDot: {
     width: 6,
@@ -248,5 +455,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
 });
-
-export default FeaturedContent;
