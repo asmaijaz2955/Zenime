@@ -99,6 +99,7 @@ export default function SearchScreen() {
         <View style={styles.content}>
           <Text style={styles.sectionTitle}>Top Searches</Text>
           <FlatList
+            key="topSearches" // Add unique key for single column layout
             data={topSearches}
             renderItem={renderTopSearchItem}
             keyExtractor={(item) => item.id.toString()}
@@ -109,22 +110,10 @@ export default function SearchScreen() {
       ) : (
         /* Search Results Section */
         <View style={styles.content}>
-          {/* <View style={styles.resultsHeader}>
-            <TouchableOpacity style={styles.menuButton}>
-              <View style={styles.menuIcon}>
-                <View style={styles.menuLine} />
-                <View style={styles.menuLine} />
-                <View style={styles.menuLine} />
-              </View>
-            </TouchableOpacity>
-            <Text style={styles.appName}>
-              Zen<Text style={styles.appNameAccent}>ime</Text>
-            </Text>
-          </View>
-           */}
           <Text style={styles.resultsTitle}>Results</Text>
           
           <FlatList
+            key="searchResults" // Add unique key for two column layout
             data={searchResults}
             renderItem={renderResultItem}
             numColumns={2}
