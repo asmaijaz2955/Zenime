@@ -49,7 +49,7 @@ const CustomDrawerContent = (props) => {
       title: 'Film',
       iconType: 'Ionicons',
       onPress: () => {
-        props.navigation.navigate('Film'); // ✅ Correct - this matches your Drawer.Screen name
+        props.navigation.navigate('AnimeHomeScreen'); // ✅ Correct - this matches your Drawer.Screen name
 
         console.log('Film pressed');
         setActiveIndex(3);

@@ -219,9 +219,9 @@ const GetRandom = async () => {
     };
   }
 };
-const GetInfo = async () => {
+const GetInfo = async (id:any) => {
   try {
-    const response = await dataServer.get(`${PROD_URL}info?id=yami-shibai-9-17879`, {
+    const response = await dataServer.get(`${PROD_URL}info?id=${id}`, {
      
     });
     return response.data;
@@ -276,9 +276,9 @@ const GetSearch = async () => {
     };
   }
 };
-const GetEpisodes = async () => {
+const GetEpisodes = async (id:any) => {
   try {
-    const response = await dataServer.get(`${PROD_URL}episodes/one-piece-100`, {
+    const response = await dataServer.get(`${PROD_URL}episodes/${id}`, {
     });
     return response.data;
   } catch (error: any) {

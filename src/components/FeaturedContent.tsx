@@ -11,12 +11,18 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 
 const { width } = Dimensions.get('window');
+
+// Navigation types - adjust these according to your navigation setup
+type NavigationProps = {
+  navigate: (screen: string, params?: any) => void;
+};
 
 // Updated interface to match the data structure from HomeScreen
 interface FeaturedContentData {
@@ -50,6 +56,7 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const navigation = useNavigation<NavigationProps>();
 
   // Convert single object to array, or use empty array as fallback
   const featuredItems: FeaturedContentData[] = React.useMemo(() => {
@@ -77,6 +84,67 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
       x: index * width,
       animated: true,
     });
+  };
+
+  // Handle play button press with navigation
+  const handlePlayPress = (item: FeaturedContentData, index: number) => {
+    console.log('Play pressed for:', item.title, 'at index:', index);
+    
+    // Call the original onPlayPress if provided
+    if (onPlayPress) {
+      onPlayPress(item, index);
+    }
+    
+    try {
+      // Navigate to Anime Home Screen with the selected anime data
+      navigation.navigate('AnimeHomeScreen', {
+        animeData: {
+          id: item.id,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: item.description,
+          image: item.image,
+          characters: item.characters,
+          streamData: item.streamData,
+        },
+        fromScreen: 'Featured',
+        index: index
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // Fallback - you might want to show an alert or handle this differently
+      console.log('Failed to navigate to AnimeHome screen');
+    }
+  };
+
+  // Handle more info button press
+  const handleMoreInfoPress = (item: FeaturedContentData, index: number) => {
+    console.log('More info pressed for:', item.title, 'at index:', index);
+    
+    // Call the original onMoreInfoPress if provided
+    if (onMoreInfoPress) {
+      onMoreInfoPress(item, index);
+    }
+    
+    try {
+      // Navigate to Anime Details Screen
+      navigation.navigate('AnimeDetails', {
+        animeData: {
+          id: item.id,
+          title: item.title,
+          subtitle: item.subtitle,
+          description: item.description,
+          image: item.image,
+          characters: item.characters,
+          streamData: item.streamData,
+        },
+        fromScreen: 'Featured',
+        index: index
+      });
+    } catch (error) {
+      console.error('Navigation error:', error);
+      console.log('Failed to navigate to AnimeDetails screen');
+    }
   };
 
   const renderStreamingInfo = (item: FeaturedContentData) => {
@@ -169,17 +237,20 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
               styles.playButton,
               item.streamData && styles.playButtonLive
             ]} 
-            onPress={() => onPlayPress?.(item, index)}
+            onPress={() => handlePlayPress(item, index)}
           >
             <View style={styles.playIcon} />
-            <Text style={styles.playButtonText}>
+            <Text style={[
+              styles.playButtonText,
+              item.streamData && styles.playButtonTextLive
+            ]}>
               {item.streamData ? 'Watch Now' : 'Play'}
             </Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.infoButton} 
-            onPress={() => onMoreInfoPress?.(item, index)}
+            onPress={() => handleMoreInfoPress(item, index)}
           >
             <View style={styles.infoIcon}>
               <Text style={styles.infoIconText}>i</Text>
@@ -226,7 +297,9 @@ const FeaturedContent: React.FC<FeaturedContentProps> = ({
     </View>
   );
 };
+
 export default FeaturedContent;
+
 const styles = StyleSheet.create({
   featuredContainer: {
     marginBottom: 30,
@@ -406,6 +479,9 @@ const styles = StyleSheet.create({
     color: '#000000',
     fontSize: 16,
     fontWeight: '600',
+  },
+  playButtonTextLive: {
+    color: '#FFFFFF',
   },
   infoButton: {
     flexDirection: 'row',
