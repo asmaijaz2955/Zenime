@@ -69,8 +69,6 @@ dataServer.interceptors.request.use(config => {
     });
   });
 });
-
-
 dataServer.interceptors.response.use(
   response => response,
   async error => {
@@ -206,7 +204,7 @@ const Gettopairing = async () => {
     };
   }
 };
-const Getrandom = async () => {
+const GetRandom = async () => {
   try {
     const response = await dataServer.get(`${PROD_URL}random`, {
      
@@ -326,7 +324,7 @@ export {
   GetCharacter,
   GetProducer,
   Gettopairing,
-  Getrandom,
+  GetRandom,
   GetInfo,
   GetSchedule,
   GetSearchSuggest,

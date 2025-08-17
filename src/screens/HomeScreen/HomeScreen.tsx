@@ -15,7 +15,7 @@ import { mockData } from '../../data/mockData';
 import { ContinueWatchingItem, MediaItem } from '../../types';
 import { DrawerActions, useFocusEffect, useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import { GetStream } from '../../service/AxiosConfig';
+import { GetRandom, Getrandom, GetStream } from '../../service/AxiosConfig';
 
 type DrawerParamList = {
   HomeScreen: undefined;
@@ -80,6 +80,8 @@ export default function HomeScreen() {
       
       console.log('Fetching stream data...');
       const response = await GetStream();
+      const responseone = await GetRandom();
+console.log('Response from Random:', responseone.results);
       
       if (response?.error) {
         setError(response.error);
