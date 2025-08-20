@@ -149,8 +149,10 @@ const GetStream = async () => {
     const response = await dataServer.get(`${PROD_URL}stream?id=naruto-shippuden-355?ep=7882&server=hd-1&type=sub`, {
      
     });
+    console.log(response)
     return response.data;
   } catch (error: any) {
+    console.log(error)
     return {
       error:
         error?.response?.data?.error ||

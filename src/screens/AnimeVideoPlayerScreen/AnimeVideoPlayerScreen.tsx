@@ -35,30 +35,49 @@ type VideoPlayerRouteParams = {
 
 type VideoPlayerRouteProp = RouteProp<{ VideoPlayer: VideoPlayerRouteParams }, 'VideoPlayer'>;
 
-// API Interface for GetStream response
+// Updated API Interface based on your streaming response
 interface StreamApiResponse {
   success: boolean;
   results: {
-    sources: Array<{
-      url: string;
-      type: string;
-      quality?: string;
+    servers: Array<{
+      data_id: string;
+      serverName: string;
+      server_id: string;
+      type: 'sub' | 'dub';
     }>;
-    tracks?: Array<{
-      file: string;
-      label: string;
-      kind: string;
-    }>;
+    streamingLink: {
+      id: string;
+      intro: {
+        start: number;
+        end: number;
+      };
+      link: {
+        file: string;
+        type: string;
+      };
+      outro: {
+        start: number;
+        end: number;
+      };
+      server: string;
+      tracks: Array<{
+        file: string;
+        label: string;
+        kind: string;
+        default?: boolean;
+      }>;
+      type: 'sub' | 'dub';
+    };
   };
   error?: string;
 }
 
 export default function AnimeVideoPlayerScreen() {
   const navigation = useNavigation();
-//   const route = useRoute<VideoPlayerRouteProp>();
+  // const route = useRoute<VideoPlayerRouteProp>();
   
   // Get params from navigation
-//   const { animeData, episodeId, server = 'hd-1', type = 'sub' } = route.params;
+  // const { animeData, episodeId, server = 'hd-1', type = 'sub' } = route.params;
   
   // State
   const [streamData, setStreamData] = useState<StreamApiResponse | null>(null);
@@ -73,6 +92,8 @@ export default function AnimeVideoPlayerScreen() {
   const [showQualityMenu, setShowQualityMenu] = useState(false);
   const [showSpeedMenu, setShowSpeedMenu] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(true);
+  const [selectedServer, setSelectedServer] = useState('HD-1');
+  const [selectedType, setSelectedType] = useState<'sub' | 'dub'>('sub');
   
   // Refs
   const videoRef = useRef<Video>(null);
@@ -104,14 +125,10 @@ export default function AnimeVideoPlayerScreen() {
       setLoading(true);
       setError(null);
       
-    //   console.log('Fetching stream data for:', {
-    //     animeId: animeData.id,
-    //     episodeId,
-    //     server,
-    //     type
-    //   });
+      console.log('Fetching stream data...');
 
       const response = await GetStream();
+      console.log('Stream response:', response);
       
       if (response.error) {
         setError(response.error);
@@ -119,6 +136,8 @@ export default function AnimeVideoPlayerScreen() {
       } else if (response.success && response.results) {
         setStreamData(response);
         console.log('Stream data fetched successfully');
+        console.log('Available servers:', response.results.servers);
+        console.log('Streaming link:', response.results.streamingLink.link.file);
       } else {
         setError('Invalid stream response format');
       }
@@ -176,15 +195,39 @@ export default function AnimeVideoPlayerScreen() {
 
   const onLoad = (data: any) => {
     setDuration(data.duration);
+    console.log('Video loaded, duration:', data.duration);
   };
 
   const onProgress = (data: any) => {
     setCurrentTime(data.currentTime);
+    
+    // Handle intro/outro skipping
+    if (streamData?.results?.streamingLink) {
+      const { intro, outro } = streamData.results.streamingLink;
+      
+      // Auto-skip intro if enabled
+      if (data.currentTime >= intro.start && data.currentTime <= intro.end) {
+        console.log('In intro section');
+      }
+      
+      // Auto-skip outro if enabled
+      if (data.currentTime >= outro.start && data.currentTime <= outro.end) {
+        console.log('In outro section');
+      }
+    }
   };
 
   const onSeek = (time: number) => {
     videoRef.current?.seek(time);
     setCurrentTime(time);
+  };
+
+  const skipIntro = () => {
+    if (streamData?.results?.streamingLink?.intro) {
+      const introEnd = streamData.results.streamingLink.intro.end;
+      onSeek(introEnd);
+      showControlsHandler();
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -216,12 +259,75 @@ export default function AnimeVideoPlayerScreen() {
     showControlsHandler();
   };
 
-  const getVideoSource = () => {
-    if (!streamData?.results?.sources?.length) return null;
+  const handleServerChange = (serverName: string, type: 'sub' | 'dub') => {
+    setSelectedServer(serverName);
+    setSelectedType(type);
+    setShowQualityMenu(false);
     
-    // For now, use the first available source
-    // In a real implementation, you'd filter by selected quality
-    return { uri: streamData.results.sources[0].url };
+    // Find the selected server data
+    const selectedServerData = streamData?.results?.servers?.find(
+      server => server.serverName === serverName && server.type === type
+    );
+    
+    if (selectedServerData) {
+      console.log('Switching to server:', selectedServerData);
+      // Here you would typically call your API again with the new server data_id
+      // For now, we'll show a message
+      Alert.alert(
+        'Server Switch',
+        `Switching to ${serverName} (${type.toUpperCase()}). This would typically refetch the stream with server ID: ${selectedServerData.server_id}`,
+        [
+          { text: 'OK', onPress: () => showControlsHandler() }
+        ]
+      );
+    }
+    
+    showControlsHandler();
+  };
+
+  const getVideoSource = () => {
+    if (!streamData?.results?.streamingLink?.link?.file) {
+      console.log('No video source available');
+      return null;
+    }
+    
+    const videoUrl = streamData.results.streamingLink.link.file;
+    console.log('Using video source:', videoUrl);
+    
+    return { 
+      uri: videoUrl,
+      type: streamData.results.streamingLink.link.type === 'hls' ? 'm3u8' : 'mp4',
+      headers: {
+        'Referer': 'https://aniwatch.to/',
+        'Origin': 'https://aniwatch.to',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'cors',
+        'Sec-Fetch-Site': 'cross-site'
+      }
+    };
+  };
+
+  const getSubtitleTracks = () => {
+    if (!streamData?.results?.streamingLink?.tracks) return [];
+    
+    return streamData.results.streamingLink.tracks.map((track, index) => ({
+      index,
+      title: track.label,
+      language: track.label.toLowerCase(),
+      type: 'text/vtt', // or track.kind
+      uri: track.file,
+    }));
+  };
+
+  const isInIntro = () => {
+    if (!streamData?.results?.streamingLink?.intro) return false;
+    const { intro } = streamData.results.streamingLink;
+    return currentTime >= intro.start && currentTime <= intro.end;
   };
 
   const renderControls = () => {
@@ -229,6 +335,13 @@ export default function AnimeVideoPlayerScreen() {
 
     return (
       <Animated.View style={[styles.controlsOverlay, { opacity: fadeAnim }]}>
+        {/* Skip Intro Button */}
+        {isInIntro() && (
+          <TouchableOpacity style={styles.skipIntroButton} onPress={skipIntro}>
+            <Text style={styles.skipIntroText}>Skip Intro</Text>
+          </TouchableOpacity>
+        )}
+
         {/* Top Controls */}
         <View style={styles.topControls}>
           <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
@@ -237,10 +350,10 @@ export default function AnimeVideoPlayerScreen() {
           
           <View style={styles.titleContainer}>
             <Text style={styles.animeTitle} numberOfLines={1}>
-              {/* {animeData.title} */}
+              Sample Anime Title
             </Text>
             <Text style={styles.episodeInfo}>
-              {/* {animeData.season} E{animeData.episodeNumber} */}
+              Season 1 Episode 1 • {selectedServer} ({selectedType.toUpperCase()})
             </Text>
           </View>
         </View>
@@ -326,7 +439,7 @@ export default function AnimeVideoPlayerScreen() {
                 onPress={() => setShowQualityMenu(!showQualityMenu)}
               >
                 <Text style={styles.controlIcon}>⚙️</Text>
-                <Text style={styles.controlLabel}>Audio & Subtitles</Text>
+                <Text style={styles.controlLabel}>Servers & Subtitles</Text>
               </TouchableOpacity>
               
               <TouchableOpacity style={styles.controlButton}>
@@ -337,10 +450,33 @@ export default function AnimeVideoPlayerScreen() {
           </View>
         </View>
 
-        {/* Quality Menu */}
+        {/* Server/Quality Menu */}
         {showQualityMenu && (
           <View style={styles.qualityMenu}>
-            <Text style={styles.menuTitle}>Quality & Audio</Text>
+            <Text style={styles.menuTitle}>Servers & Quality</Text>
+            
+            {/* Servers Section */}
+            <Text style={styles.sectionTitle}>Servers:</Text>
+            {streamData?.results?.servers?.map((server) => (
+              <TouchableOpacity
+                key={`${server.serverName}-${server.type}`}
+                style={[
+                  styles.menuItem,
+                  selectedServer === server.serverName && selectedType === server.type && styles.selectedMenuItem
+                ]}
+                onPress={() => handleServerChange(server.serverName, server.type)}
+              >
+                <Text style={styles.menuItemText}>
+                  {server.serverName} ({server.type.toUpperCase()})
+                </Text>
+                {selectedServer === server.serverName && selectedType === server.type && (
+                  <Text style={styles.checkIcon}>✓</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+            
+            {/* Quality Section */}
+            <Text style={styles.sectionTitle}>Quality:</Text>
             {['Auto', '1080p', '720p', '480p'].map((quality) => (
               <TouchableOpacity
                 key={quality}
@@ -391,7 +527,7 @@ export default function AnimeVideoPlayerScreen() {
         <StatusBar hidden />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FFFFFF" />
-          <Text style={styles.loadingText}>Loading video...</Text>
+          <Text style={styles.loadingText}>Loading video stream...</Text>
         </View>
       </SafeAreaView>
     );
@@ -435,6 +571,42 @@ export default function AnimeVideoPlayerScreen() {
             onProgress={onProgress}
             resizeMode="contain"
             rate={parseFloat(selectedSpeed.replace('x', ''))}
+            textTracks={getSubtitleTracks()}
+            selectedTextTrack={{
+              type: 'title',
+              value: streamData?.results?.streamingLink?.tracks?.[0]?.label || 'English'
+            }}
+            onError={(error) => {
+              console.error('Video playback error:', error);
+              
+              // Handle specific 403 error
+              if (error?.error?.errorString?.includes('ERROR_CODE_IO_BAD_HTTP_STATUS')) {
+                setError('Stream access denied. This may be due to geo-restrictions or server protection. Try a different server.');
+              } else {
+                setError(`Video playback failed: ${error?.error?.errorString || 'Unknown error'}`);
+              }
+            }}
+            onLoadStart={() => {
+              console.log('Video loading started...');
+            }}
+            onReadyForDisplay={() => {
+              console.log('Video ready for display');
+            }}
+            onSeek={(data) => {
+              console.log('Video seek completed:', data);
+            }}
+            // Additional props for better HLS handling
+            ignoreSilentSwitch="ignore"
+            mixWithOthers="duck"
+            reportBandwidth={true}
+            // Try to handle CORS issues
+            allowsExternalPlayback={false}
+            bufferConfig={{
+              minBufferMs: 15000,
+              maxBufferMs: 50000,
+              bufferForPlaybackMs: 2500,
+              bufferForPlaybackAfterRebufferMs: 5000
+            }}
           />
         )}
         
@@ -510,6 +682,20 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: 'space-between',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  },
+  skipIntroButton: {
+    position: 'absolute',
+    bottom: hp('15%'),
+    right: wp('5%'),
+    backgroundColor: 'rgba(220, 38, 38, 0.9)',
+    paddingHorizontal: wp('4%'),
+    paddingVertical: hp('1%'),
+    borderRadius: 6,
+  },
+  skipIntroText: {
+    color: '#FFFFFF',
+    fontSize: wp('3.5%'),
+    fontWeight: '600',
   },
   topControls: {
     flexDirection: 'row',
@@ -644,6 +830,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: wp('4%'),
     minWidth: wp('40%'),
+    maxHeight: hp('50%'),
   },
   speedMenu: {
     position: 'absolute',
@@ -659,6 +846,13 @@ const styles = StyleSheet.create({
     fontSize: wp('4%'),
     fontWeight: '600',
     marginBottom: hp('2%'),
+  },
+  sectionTitle: {
+    color: '#CCCCCC',
+    fontSize: wp('3.5%'),
+    fontWeight: '500',
+    marginTop: hp('1%'),
+    marginBottom: hp('1%'),
   },
   menuItem: {
     flexDirection: 'row',
