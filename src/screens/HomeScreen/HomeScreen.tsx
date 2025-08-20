@@ -6,6 +6,8 @@ import {
   ScrollView,
   StatusBar,
   RefreshControl,
+  ActivityIndicator,
+  Text,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../components/Header';
@@ -96,6 +98,15 @@ interface FeaturedContentData {
 interface ApiError {
   error: string;
 }
+
+// Loader Component
+const LoaderScreen = () => (
+  <View style={styles.loaderContainer}>
+    <ActivityIndicator size="large" color="#E50914" />
+    <Text style={styles.loaderText}>Loading content...</Text>
+  </View>
+);
+
 export default function HomeScreen() {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [streamData, setStreamData] = useState<StreamApiResponse | null>(null);
@@ -105,6 +116,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  
   const transformTopTenToFeatured = (topTenItems: TopTenApiItem[]): FeaturedContentData[] => {
     return topTenItems.slice(0, 7).map((item, index) => ({
       id: item.id,
@@ -117,6 +129,7 @@ export default function HomeScreen() {
       ),
     }));
   };
+  
   const transformTopTenToMediaItems = (topTenItems: TopTenApiItem[]): MediaItem[] => {
     return topTenItems.map((item, index) => ({
       id: parseInt(item.data_id),
@@ -148,6 +161,7 @@ export default function HomeScreen() {
       console.log('Stream Response:', streamResponse);
       console.log('Random Response:', randomResponse);
       console.log('TopTen Response:', topTenResponse);
+      
       if (topTenResponse?.success && topTenResponse?.results) {
         setTopTenData(topTenResponse as TopTenApiResponse);
         const monthlyTopTen = topTenResponse.results.month || [];
@@ -186,6 +200,7 @@ export default function HomeScreen() {
       setRefreshing(false);
     }
   };
+  
   useEffect(() => {
     fetchAllData();
   }, []);
@@ -229,6 +244,7 @@ export default function HomeScreen() {
       // });
     }
   };
+  
   const handleMoreInfoPress = (item: FeaturedContentData, index: number) => {
     console.log('More info pressed for:', item.title, 'at index:', index);
     const topTenItem = topTenData?.results?.month?.[index];
@@ -265,6 +281,16 @@ export default function HomeScreen() {
   console.log('Current weekly trending data count:', weeklyTrendingData.length);
   console.log('Loading state:', loading);
   console.log('Error state:', error);
+
+  // Show loader when loading
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#000000" />
+        <LoaderScreen />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -323,5 +349,17 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+  },
+  loaderText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    marginTop: 16,
+    fontWeight: '500',
   },
 });

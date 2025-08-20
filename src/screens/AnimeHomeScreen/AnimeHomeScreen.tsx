@@ -14,7 +14,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import LinearGradient from 'react-native-linear-gradient';
-import { GetInfo } from '../../service/AxiosConfig';
+import { GetEpisodes, GetInfo } from '../../service/AxiosConfig';
 
 const { width, height } = Dimensions.get('window');
 
@@ -136,7 +136,7 @@ export default function AnimeHomeScreen() {
       }
 
       const response = await GetInfo(animeData.id);
-      
+   
       if (response.error) {
         setError(response.error);
         console.error('API Error:', response.error);
@@ -147,6 +147,9 @@ export default function AnimeHomeScreen() {
         setError('Invalid response format');
         console.error('Invalid response:', response);
       }
+      const res = await GetEpisodes(animeData.id);
+      console.log('Episodes response:', res);
+           
     } catch (err) {
       console.error('Fetch anime info error:', err);
       setError('Failed to fetch anime information');
@@ -382,7 +385,7 @@ export default function AnimeHomeScreen() {
 
                 {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.playButton}>
+                  <TouchableOpacity style={styles.playButton} onPress={()=>navigation.navigate('AnimeVideoPlayerScreen')}>
                     <View style={styles.playIcon}>
                       <Text style={styles.playIconText}>▶</Text>
                     </View>

@@ -282,6 +282,7 @@ const GetEpisodes = async (id:any) => {
     });
     return response.data;
   } catch (error: any) {
+    console.log('error', error);  
     return {
       error:
         error?.response?.data?.error ||

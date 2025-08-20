@@ -7,6 +7,7 @@ import {Text, View, StyleSheet} from 'react-native';
 import {
   ActionScreen,
   AnimeHomeScreen,
+  AnimeVideoPlayerScreen,
   GenresScreen,
   HomeScreen,
   NotificationScreen,
@@ -105,6 +106,11 @@ export default function DrawerStack() {
       <Drawer.Screen
         name="ActionScreen"
         component={ActionScreen}
+        options={{headerShown: false}}
+      />
+        <Drawer.Screen
+        name="AnimeVideoPlayerScreen"
+        component={AnimeVideoPlayerScreen}
         options={{headerShown: false}}
       />
       {/* <Drawer.Screen
