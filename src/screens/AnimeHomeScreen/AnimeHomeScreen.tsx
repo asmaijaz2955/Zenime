@@ -35,6 +35,23 @@ type AnimeHomeRouteParams = {
 
 type AnimeHomeRouteProp = RouteProp<{ AnimeHome: AnimeHomeRouteParams }, 'AnimeHome'>;
 
+// Episodes interface
+interface Episode {
+  episodeId: string;
+  number: number;
+  title: string;
+  isFiller?: boolean;
+}
+
+// Episodes API response
+interface EpisodesApiResponse {
+  success: boolean;
+  results: {
+    episodes: Episode[];
+    totalEpisodes: number;
+  };
+}
+
 // API Interface for GetInfo response
 interface InfoApiResponse {
   success: boolean;
@@ -80,8 +97,6 @@ interface InfoApiResponse {
   };
 }
 
-// API function (you can move this to your service file)
-
 export default function AnimeHomeScreen() {
   const navigation = useNavigation();
   const route = useRoute<AnimeHomeRouteProp>();
@@ -92,21 +107,12 @@ export default function AnimeHomeScreen() {
   // State
   const [activeTab, setActiveTab] = useState(0);
   const [apiData, setApiData] = useState<InfoApiResponse | null>(null);
+  const [episodesData, setEpisodesData] = useState<EpisodesApiResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [episodesLoading, setEpisodesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const tabs = ['Episodes', 'More Details', 'More like this'];
-  
-  const episodes = [
-    {
-      id: 1,
-      title: "Episode name",
-      season: "S1",
-      episode: "E1",
-      duration: "50m",
-      thumbnail: null
-    }
-  ];
 
   const moreAnime = [
     { id: 1, color: '#8B5CF6' },
@@ -117,44 +123,55 @@ export default function AnimeHomeScreen() {
     { id: 6, color: '#EC4899' }
   ];
 
-  // Fetch anime info on component mount
+  // Fetch anime info and episodes on component mount
   useEffect(() => {
-    fetchAnimeInfo();
+    fetchAnimeData();
   }, [animeData.id]);
 
-  const fetchAnimeInfo = async () => {
+  const fetchAnimeData = async () => {
     try {
       setLoading(true);
       setError(null);
       
       console.log('Fetching anime info for ID:', animeData.id);
-      console.log('Received anime data:', animeData);
       
       if (!animeData.id) {
         setError('No anime ID provided');
         return;
       }
 
-      const response = await GetInfo(animeData.id);
+      // Fetch anime info
+      const infoResponse = await GetInfo(animeData.id);
    
-      if (response.error) {
-        setError(response.error);
-        console.error('API Error:', response.error);
-      } else if (response.success && response.results) {
-        setApiData(response);
-        console.log('API data fetched successfully:', response.results);
+      if (infoResponse.error) {
+        setError(infoResponse.error);
+        console.error('API Error:', infoResponse.error);
+      } else if (infoResponse.success && infoResponse.results) {
+        setApiData(infoResponse);
+        console.log('API data fetched successfully:', infoResponse.results);
       } else {
         setError('Invalid response format');
-        console.error('Invalid response:', response);
+        console.error('Invalid response:', infoResponse);
       }
-      const res = await GetEpisodes(animeData.id);
-      console.log('Episodes response:', res);
+
+      // Fetch episodes
+      setEpisodesLoading(true);
+      const episodesResponse = await GetEpisodes(animeData.id);
+      console.log('Episodes response:', episodesResponse);
+      
+      if (episodesResponse.success && episodesResponse.results) {
+        setEpisodesData(episodesResponse);
+        console.log('Episodes fetched successfully:', episodesResponse.results);
+      } else {
+        console.error('Failed to fetch episodes:', episodesResponse);
+      }
            
     } catch (err) {
-      console.error('Fetch anime info error:', err);
+      console.error('Fetch anime data error:', err);
       setError('Failed to fetch anime information');
     } finally {
       setLoading(false);
+      setEpisodesLoading(false);
     }
   };
 
@@ -205,18 +222,40 @@ export default function AnimeHomeScreen() {
 
   const displayData = getDisplayData();
 
-  const renderEpisodeCard = (episode: any) => (
-    <View key={episode.id} style={styles.episodeCard}>
-      <View style={styles.episodeThumbnail} />
-      <View style={styles.episodeInfo}>
-        <Text style={styles.episodeTitle}>{episode.title}</Text>
-        <View style={styles.episodeMeta}>
-          <Text style={styles.episodeMetaText}>{episode.season}</Text>
-          <Text style={styles.episodeMetaText}>{episode.episode}</Text>
-          <Text style={styles.episodeMetaText}>{episode.duration}</Text>
+  // Render episode card with real data
+  const renderEpisodeCard = (episode: Episode, index: number) => (
+    <TouchableOpacity 
+      key={episode.episodeId || `episode-${index}`} 
+      style={styles.episodeCard}
+      onPress={() => {
+        // Navigate to video player with episode data
+        navigation.navigate('AnimeVideoPlayerScreen', {
+          episodeId: episode.episodeId,
+          episodeNumber: episode.number,
+          animeTitle: displayData.title,
+          episodeTitle: episode.title
+        });
+      }}
+    >
+      <View style={styles.episodeThumbnail}>
+        <View style={styles.playIcon}>
+          <Text style={styles.playIconText}>▶</Text>
         </View>
       </View>
-    </View>
+      <View style={styles.episodeInfo}>
+        <Text style={styles.episodeTitle}>
+          {episode.title || `Episode ${episode.number}`}
+        </Text>
+        {/* <View style={styles.episodeMeta}>
+          <Text style={styles.episodeMetaText}>S1</Text>
+          <Text style={styles.episodeMetaText}>E{episode.number}</Text>
+          <Text style={styles.episodeMetaText}>{displayData.duration || '24m'}</Text>
+          {episode.isFiller && (
+            <Text style={styles.fillerTag}>Filler</Text>
+          )}
+        </View> */}
+      </View>
+    </TouchableOpacity>
   );
 
   const renderMoreDetails = () => (
@@ -255,6 +294,12 @@ export default function AnimeHomeScreen() {
           <Text style={styles.detailValue}>{displayData.duration}</Text>
         </View>
       )}
+      {episodesData && (
+        <View style={styles.detailRow}>
+          <Text style={styles.detailLabel}>Total Episodes:</Text>
+          <Text style={styles.detailValue}>{episodesData.results.totalEpisodes}</Text>
+        </View>
+      )}
     </View>
   );
 
@@ -276,12 +321,29 @@ export default function AnimeHomeScreen() {
             <View style={styles.seasonSelector}>
               <TouchableOpacity style={styles.seasonDropdown}>
                 <Text style={styles.seasonText}>
-                  Season 1 ({displayData.episodes ? `${displayData.episodes.sub || 0} EP` : '1 EP'})
+                  Season 1 ({episodesData ? `${episodesData.results.totalEpisodes} EP` : 
+                            displayData.episodes ? `${displayData.episodes.sub || 0} EP` : '1 EP'})
                 </Text>
                 <Text style={styles.dropdownArrow}>⌄</Text>
               </TouchableOpacity>
             </View>
-            {episodes.map(renderEpisodeCard)}
+            
+            {episodesLoading ? (
+              <View style={styles.episodesLoadingContainer}>
+                <ActivityIndicator size="small" color="#FFFFFF" />
+                <Text style={styles.episodesLoadingText}>Loading episodes...</Text>
+              </View>
+            ) : episodesData?.results?.episodes?.length > 0 ? (
+              // Render real episodes
+              episodesData.results.episodes.map((episode, index) => 
+                renderEpisodeCard(episode, index)
+              )
+            ) : (
+              // Fallback to placeholder episodes
+              <View style={styles.noEpisodesContainer}>
+                <Text style={styles.noEpisodesText}>No episodes available</Text>
+              </View>
+            )}
           </View>
         );
       case 1:
@@ -329,7 +391,7 @@ export default function AnimeHomeScreen() {
         
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Error: {error}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchAnimeInfo}>
+          <TouchableOpacity style={styles.retryButton} onPress={fetchAnimeData}>
             <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableOpacity>
         </View>
@@ -385,7 +447,22 @@ export default function AnimeHomeScreen() {
 
                 {/* Action Buttons */}
                 <View style={styles.buttonContainer}>
-                  <TouchableOpacity style={styles.playButton} onPress={()=>navigation.navigate('AnimeVideoPlayerScreen')}>
+                  <TouchableOpacity 
+                    style={styles.playButton} 
+                    onPress={() => {
+                      if (episodesData?.results?.episodes?.length > 0) {
+                        const firstEpisode = episodesData.results.episodes[0];
+                        navigation.navigate('AnimeVideoPlayerScreen', {
+                          episodeId: firstEpisode.episodeId,
+                          episodeNumber: firstEpisode.number,
+                          animeTitle: displayData.title,
+                          episodeTitle: firstEpisode.title
+                        });
+                      } else {
+                        navigation.navigate('AnimeVideoPlayerScreen');
+                      }
+                    }}
+                  >
                     <View style={styles.playIcon}>
                       <Text style={styles.playIconText}>▶</Text>
                     </View>
@@ -689,9 +766,11 @@ const styles = StyleSheet.create({
   episodeThumbnail: {
     width: wp('30%'),
     height: hp('8%'),
-    backgroundColor: '#D1D5DB',
+    backgroundColor: '#374151',
     borderRadius: 4,
     marginRight: wp('4%'),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   episodeInfo: {
     flex: 1,
@@ -705,11 +784,40 @@ const styles = StyleSheet.create({
   },
   episodeMeta: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   episodeMetaText: {
     fontSize: wp('3.5%'),
     color: '#9CA3AF',
     marginRight: wp('4%'),
+  },
+  fillerTag: {
+    fontSize: wp('3%'),
+    color: '#F59E0B',
+    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+    paddingHorizontal: wp('2%'),
+    paddingVertical: hp('0.2%'),
+    borderRadius: 4,
+    marginLeft: wp('2%'),
+  },
+  episodesLoadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: hp('4%'),
+  },
+  episodesLoadingText: {
+    color: '#FFFFFF',
+    fontSize: wp('3.5%'),
+    marginLeft: wp('2%'),
+  },
+  noEpisodesContainer: {
+    paddingVertical: hp('4%'),
+    alignItems: 'center',
+  },
+  noEpisodesText: {
+    color: '#9CA3AF',
+    fontSize: wp('4%'),
   },
   detailsContent: {
     paddingHorizontal: wp('5%'),

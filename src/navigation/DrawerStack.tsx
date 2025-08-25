@@ -17,6 +17,7 @@ import {
   SearchScreen,
   SeriesScreen,
   SettingsScreen,
+  WebViewPlayerScreen,
 } from '../screens';
 
 const Drawer = createDrawerNavigator();
@@ -111,6 +112,11 @@ export default function DrawerStack() {
         <Drawer.Screen
         name="AnimeVideoPlayerScreen"
         component={AnimeVideoPlayerScreen}
+        options={{headerShown: false}}
+      />
+         <Drawer.Screen
+        name="WebViewPlayerScreen"
+        component={WebViewPlayerScreen}
         options={{headerShown: false}}
       />
       {/* <Drawer.Screen
